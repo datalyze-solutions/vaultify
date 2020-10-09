@@ -1,0 +1,43 @@
+version: "2.4"
+
+networks:
+  internal:
+
+services:
+
+  postgres:
+    image: postgres:12
+    container_name: vaultify-db
+    networks:
+      internal:
+    volumes:
+      # mount the vaultify binary into the container
+      - ../bin/vaultify:/vaultify:ro
+      # mount the vault and key into the container
+      - ./vault:/etc/vault/vault:ro
+      - ./key:/etc/vault/key:ro
+    environment:
+      # this values will be replaced
+      "POSTGRES_PASSWORD": "{{DB_PASSWORD}}"
+      "POSTGRES_USER": "tester"
+      "PGPASSWORD": "{{DB_PASSWORD}}"
+    entrypoint: /vaultify
+    # call the 'run' command of vaultify
+    # to call the containers entrypoint ("docker-entrypoint.sh") with it's command ("postgres")
+    command: run docker-entrypoint.sh postgres
+
+  client:
+    image: postgres:12
+    container_name: vaultify-db-client
+    depends_on:
+      - postgres
+    networks:
+      internal:
+    volumes:
+      - ../bin/vaultify:/vaultify:ro
+      - ./vault:/etc/vault/vault:ro
+      - ./key:/etc/vault/key:ro
+    environment:
+      "PGPASSWORD": "{{DB_PASSWORD}}"
+    entrypoint: /vaultify
+    command: run sh -c "until pg_isready -U tester -d tester -h postgres -p 5432; do sleep 2; done && psql -U tester -d tester -h postgres -p 5432 -c \"SELECT 1 as test\""
