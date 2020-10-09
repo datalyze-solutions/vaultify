@@ -4,10 +4,9 @@ SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 .EXPORT_ALL_VARIABLES:
 SHELL := /bin/bash
 
-# GIT_COMMIT=$(git rev-list -1 HEAD)
 VERSION := 0.0.1
-BUILD := dev
-GIT_COMMIT := dev
+GIT_BRANCH := $(shell git symbolic-ref --short HEAD)
+GIT_COMMIT := $(shell git rev-list -1 HEAD)
 
 BIN_DIR := bin
 BIN_FILE := $(BIN_DIR)/vaultify
@@ -17,13 +16,19 @@ DEMO_VAULT := $(DEMO_DIR)/vault
 DEMO_VAULT_KEY := $(DEMO_DIR)/key
 
 MODULE_BASE := github.com/datalyze-solutions/vaultify
-LDFLAGS = -ldflags "-w -s -X ${MODULE_BASE}/cmd.version=$(VERSION) -X ${MODULE_BASE}/cmd.gitCommit=$(GIT_COMMIT) -X ${MODULE_BASE}/cmd.build=$(BUILD)"
+LDFLAGS = -ldflags "-w -s -X ${MODULE_BASE}/cmd.version=$(VERSION) -X ${MODULE_BASE}/cmd.gitCommit=$(GIT_COMMIT) -X ${MODULE_BASE}/cmd.gitBranch=$(GIT_BRANCH)"
 
 DEFAULT_FLAGS := --vaultFile $(DEMO_VAULT) --vaultKeyFile $(DEMO_VAULT_KEY)
+
+version:
+	@echo "Version: $(VERSION), Branch: $(GIT_BRANCH), Commit: $(GIT_COMMIT)"
 
 build:
 	mkdir -p $(BIN_DIR)
 	go build ${LDFLAGS} -o $(BIN_DIR)
+
+test:
+	go test -v .
 
 get-variable-path:
 	go tool nm ./vaultify | grep gitCommit
@@ -36,6 +41,9 @@ test-run-only-sh:
 
 test-view:
 	$(BIN_FILE) $(DEFAULT_FLAGS) view
+
+test-version:
+	$(BIN_FILE) $(DEFAULT_FLAGS) version
 
 docker-down:
 	docker container stop vaultify-db || true
