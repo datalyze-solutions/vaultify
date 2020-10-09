@@ -35,3 +35,9 @@ jobs:
 
     - name: Test
       run: make test
+
+    - name: Upload the binary
+      uses: actions/upload-artifact@v2.2.0
+      with:
+        name: vaultify
+        path: ./bin/vaultify
