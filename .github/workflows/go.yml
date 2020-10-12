@@ -13,15 +13,11 @@ jobs:
     container:
       image: golang:alpine
     steps:  
+    - name: add packages (actions/checkout needs git installed)
+      run: apk add --no-cache make bash git upx
     - uses: actions/checkout@v2
-    - name: What OS is running
-      run: uname -a
-    - name: What go version do we have
-      run: go version
     - name: show cloned repo
       run: ls -alh
-    - name: add packages
-      run: apk add --no-cache make bash git upx
     - name: Get dependencies
       run: |
         go get -v -t -d ./...
