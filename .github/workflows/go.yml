@@ -9,15 +9,36 @@ on:
 jobs:
 
   build-alpine:
-    name: build-alpine
     runs-on: ubuntu-latest
-    container: golang:alpine
-    steps:
-      - run: |
-          echo This job does specify a container.
-          echo It runs in the container instead of the VM.
-        name: Run in container
-
+    container:
+      image: golang:alpine
+    steps:  
+    - uses: actions/checkout@v2
+    - name: What OS is running
+      run: uname -a
+    - name: What go version do we have
+      run: go version
+    - name: show cloned repo
+      run: ls -alh
+    - name: add packages
+      run: apk add --no-cache make bash upx
+    - name: Get dependencies
+      run: |
+        go get -v -t -d ./...
+        if [ -f Gopkg.toml ]; then
+            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+            dep ensure
+        fi
+    - name: Build
+      run: make build
+    - name: Test
+      run: make test
+    - name: Upload the binary
+      uses: actions/upload-artifact@v2.2.0
+      with:
+        name: vaultify-alpine-amd64
+        path: ./bin/vaultify
+  
   build-linux:
     name: build-linux
     runs-on: ubuntu-latest
