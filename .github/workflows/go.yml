@@ -10,14 +10,11 @@ jobs:
 
   build-alpine:
     name: build-alpine
-    runs-on: golang:alpine
+    runs-on: ubuntu-latest
     steps:
 
-    - name: Set up Go 1.x
-      uses: actions/setup-go@v2
-      with:
-        go-version: ^1.13
-      id: go
+    - name: k8s-actions/golang
+      uses: k8s-actions/golang@v0.1
 
     - name: Set up environment
       run: apk add --no-cache make bash upx
