@@ -11,11 +11,8 @@ jobs:
   build-alpine:
     name: build-alpine
     runs-on: ubuntu-latest
+    container: golang:alpine
     steps:
-
-    - name: k8s-actions/golang
-      uses: k8s-actions/golang@v0.1
-
     - name: Set up environment
       run: apk add --no-cache make bash upx
       
