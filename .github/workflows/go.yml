@@ -21,7 +21,7 @@ jobs:
     - name: show cloned repo
       run: ls -alh
     - name: add packages
-      run: apk add --no-cache make bash upx
+      run: apk add --no-cache make bash git upx
     - name: Get dependencies
       run: |
         go get -v -t -d ./...
