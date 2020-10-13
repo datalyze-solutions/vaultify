@@ -8,32 +8,33 @@ on:
 
 jobs:
 
-  build-alpine:
-    runs-on: ubuntu-latest
-    container:
-      image: golang:alpine
-    steps:
-    - name: add packages (actions/checkout needs git installed)
-      run: apk add --no-cache make bash git upx
-    - uses: actions/checkout@v2
-    - name: show cloned repo
-      run: ls -alh
-    - name: Get dependencies
-      run: |
-        go get -v -t -d ./...
-        if [ -f Gopkg.toml ]; then
-            curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-            dep ensure
-        fi
-    - name: Build
-      run: make build
-    - name: Reduce binary size
-      run: make compress
-    - name: Upload the binary
-      uses: actions/upload-artifact@v2.2.0
-      with:
-        name: vaultify-alpine-amd64
-        path: ./bin/vaultify
+  # disabled specific alpine build, cause binary will be not dynamic linked
+  # build-alpine:
+  #   runs-on: ubuntu-latest
+  #   container:
+  #     image: golang:alpine
+  #   steps:
+  #   - name: add packages (actions/checkout needs git installed)
+  #     run: apk add --no-cache make bash git upx
+  #   - uses: actions/checkout@v2
+  #   - name: show cloned repo
+  #     run: ls -alh
+  #   - name: Get dependencies
+  #     run: |
+  #       go get -v -t -d ./...
+  #       if [ -f Gopkg.toml ]; then
+  #           curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+  #           dep ensure
+  #       fi
+  #   - name: Build
+  #     run: make build
+  #   - name: Reduce binary size
+  #     run: make compress
+  #   - name: Upload the binary
+  #     uses: actions/upload-artifact@v2.2.0
+  #     with:
+  #       name: vaultify-alpine-amd64
+  #       path: ./bin/vaultify
 
   build-linux:
     name: build-linux

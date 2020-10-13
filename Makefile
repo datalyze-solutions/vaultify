@@ -16,6 +16,9 @@ DEMO_VAULT := $(DEMO_DIR)/vault
 DEMO_VAULT_KEY := $(DEMO_DIR)/key
 
 MODULE_BASE := github.com/datalyze-solutions/vaultify
+# disable dynamic linking of the binary to be runnable on any linux (e.g. ubuntu and alpine)
+# https://stackoverflow.com/questions/36279253/go-compiled-binary-wont-run-in-an-alpine-docker-container-on-ubuntu-host
+BUILD_VARS := CGO_ENABLED=0 GOOS=linux GARCH=amd64
 LDFLAGS = -ldflags "-w -s -X ${MODULE_BASE}/cmd.version=$(VERSION) -X ${MODULE_BASE}/cmd.gitCommit=$(GIT_COMMIT) -X ${MODULE_BASE}/cmd.gitBranch=$(GIT_BRANCH)"
 
 DEFAULT_FLAGS := --vaultFile $(DEMO_VAULT) --vaultKeyFile $(DEMO_VAULT_KEY)
@@ -25,10 +28,14 @@ version:
 
 build:
 	mkdir -p $(BIN_DIR)
-	GOOS=linux GARCH=amd64 go build ${LDFLAGS} -o $(BIN_DIR)
+	$(BUILD_VARS) go build ${LDFLAGS} -o $(BIN_DIR)
+
+view-linked-libs:
+	ldd $(BIN_FILE) || true
 
 compress:
 	upx $(BIN_FILE)
+	upx -t $(BIN_FILE)
 
 test:
 	go test -v .
@@ -67,6 +74,11 @@ test-docker-pg: docker-down
 test-docker-pg-connect:
 	docker exec -it vaultify-db \
 		psql -U tester -d tester -h localhost -p 5432 -c "SELECT 1 as test"
+
+test-os-runnable:
+	docker run -it --rm -v $PWD/bin/:/app:ro alpine /app/vaultify
+	docker run -it --rm -v $PWD/bin/:/app:ro busybox /app/vaultify
+	docker run -it --rm -v $PWD/bin/:/app:ro ubuntu:20.04 /app/vaultify
 
 docker-build:
 	docker build -t vaultify .
