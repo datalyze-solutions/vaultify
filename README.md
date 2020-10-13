@@ -19,11 +19,33 @@ DB_PORT=5432
 
 Vaultify takes the OSes environment variables and replaces the value marked within curly braces: `{{VALUE_INSIDE_VAULT_FILE}}`. Doing so you can also combine new environment variable with values from the vault, e.g. `postgres://{{DB_USER}}:{{DB_PASSWORD}}@{{DB_HOST}}:{{DB_PORT}}/{{DB_NAME}}`. Vaultify reads the ansible vault from `/etc/vault/vault` and the key `/etc/vault/key`. The keyfile contains the password in plaintext.
 
+```bash
+export VAULTIFY_DB_PASSWORD= "{{DB_PASSWORD}}"
+export VAULTIFY_TEST= "{{TEST}}"
+export VAULTIFY_POSTGRES_PASSWORD= "{{DB_PASSWORD}}"
+export VAULTIFY_DB_URI= "postgres://{{DB_USER}}:{{DB_PASSWORD}}@{{DB_HOST}}:{{DB_PORT}}/{{DB_NAME}}"
+# will not be replaced, cause it does not match the {{}} formatters
+export VAULTIFY_ALTERNATIVE_TEST= "<<TEST>>"
+
+./bin/vaultify run bash
+export | grep VAULTIFY
+```
+
+should show the following result:
+
+```bash
+export VAULTIFY_ALTERNATIVE_TEST='<<TEST>>'
+export VAULTIFY_DB_PASSWORD='super-secret-password'
+export VAULTIFY_DB_URI='postgres://bosch:super-secret-password@db:5432/backend'
+export VAULTIFY_POSTGRES_PASSWORD='super-secret-password'
+export VAULTIFY_TEST='test123'
+```
+
 ## Examples
 
 ### Docker
 
-You'll find a prepared plain docker example bundles within the Makefile. Calling `make docker-pg docker-pg-connect docker-down` starts the complete docker test. The example starts a postgres server and performs a simple select on the new database.
+You'll find a prepared plain docker example bundles within the Makefile. Calling `make test-docker-pg test-docker-pg-connect test-docker-down` starts the complete docker test. The example starts a postgres server and performs a simple select on the new database.
 
 ```bash
 docker run -d --rm \

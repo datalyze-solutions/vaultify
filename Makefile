@@ -1,4 +1,4 @@
-.PHONY: build get-variable-path test-run-sh test-run-only-sh test-view docker-down docker-pg docker-pg-connect
+.PHONY: build get-variable-path test-run-sh test-run-only-sh test-view docker-down docker-pg docker-pg-connect compress
 
 SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 .EXPORT_ALL_VARIABLES:
@@ -25,7 +25,10 @@ version:
 
 build:
 	mkdir -p $(BIN_DIR)
-	go build ${LDFLAGS} -o $(BIN_DIR)
+	GOOS=linux GARCH=amd64 go build ${LDFLAGS} -o $(BIN_DIR)
+
+compress:
+	upx $(BIN_FILE)
 
 test:
 	go test -v .
@@ -45,10 +48,10 @@ test-view:
 test-version:
 	$(BIN_FILE) $(DEFAULT_FLAGS) version
 
-docker-down:
+test-docker-down:
 	docker container stop vaultify-db || true
 
-docker-pg: docker-down
+test-docker-pg: docker-down
 	docker run -d --rm \
 		-v $$PWD/$(BIN_FILE):/vaultify:ro \
 		-v $$PWD/$(DEMO_VAULT):/etc/vault/vault:ro \
@@ -61,6 +64,9 @@ docker-pg: docker-down
 		postgres:12 \
 		--debug run docker-entrypoint.sh postgres
 
-docker-pg-connect:
+test-docker-pg-connect:
 	docker exec -it vaultify-db \
 		psql -U tester -d tester -h localhost -p 5432 -c "SELECT 1 as test"
+
+docker-build:
+	docker build -t vaultify .
