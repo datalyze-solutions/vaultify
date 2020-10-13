@@ -45,7 +45,7 @@ jobs:
         go-version: ^1.13
       id: go
     - name: Install missing packages
-      run: apt-get update && apt-get install upx-ucl
+      run: sudo apt-get update && sudo apt-get install upx-ucl
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
     - name: Get dependencies
