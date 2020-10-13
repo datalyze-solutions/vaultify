@@ -76,9 +76,9 @@ test-docker-pg-connect:
 		psql -U tester -d tester -h localhost -p 5432 -c "SELECT 1 as test"
 
 test-os-runnable:
-	docker run -it --rm -v $PWD/bin/:/app:ro alpine /app/vaultify
-	docker run -it --rm -v $PWD/bin/:/app:ro busybox /app/vaultify
-	docker run -it --rm -v $PWD/bin/:/app:ro ubuntu:20.04 /app/vaultify
+	docker run -it --rm -v $$PWD/bin/:/app:ro alpine /app/vaultify run-only echo "It runs!"
+	docker run -it --rm -v $$PWD/bin/:/app:ro busybox /app/vaultify run-only echo "It runs!"
+	docker run -it --rm -v $$PWD/bin/:/app:ro ubuntu:20.04 /app/vaultify run-only echo "It runs!"
 
 docker-build:
 	docker build -t vaultify .
