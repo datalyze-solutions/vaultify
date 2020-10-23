@@ -70,6 +70,35 @@ Inside `demo/` you'll also find the `docker-compose.yaml` file, containing the s
 ```bash
 cd demo
 docker-compose up -d
+docker wait vaultify-db-client
+docker-compose logs client
 # clean up, remove volume and network
-docker-compose down -v
+docker-compose down --volume --remove-orphans
+```
+
+or you can use `make`
+
+```bash
+make test-docker-compose
+```
+
+### Docker Swarm
+
+To prevent building seperate images with vaultify included, you can copy vaultify to a volume shared with each service in the stack. The image hosted at hub.docker.com `datalyzesolutions/vaultify:latest` is prepared to copy vaultify into the directory `/opt/vaultify`. If you mount the volume inside another container you can set the entrypoint to `/opt/vaultify/vaultify`.
+
+`demo/swarm.yaml` contains a prepared swarm example. You can deploy it on youre own or using the make commands.
+
+```bash
+cd demo
+docker stack deploy -c swarm.yaml vaultify-demo
+
+# or with make
+make test-docker-swarm-deploy
+```
+
+You can now check the logs of the `postgres` and `client` services.
+
+```bash
+docker service logs -f postgres
+docker service logs -f client
 ```

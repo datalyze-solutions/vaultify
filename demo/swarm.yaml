@@ -1,0 +1,68 @@
+version: "3.8"
+
+networks:
+  internal:
+
+secrets:
+  vault:
+    file: vault
+  key:
+    file: key
+
+volumes:
+  vaultify-bin:
+
+services:
+
+  postgres:
+    image: postgres:12
+    networks:
+      internal:
+    secrets:
+      # mount the vault and key into the container
+      - source: vault
+        target: /etc/vault/vault
+      - source: key
+        target: /etc/vault/key
+    volumes:
+      # mount the vaultify binary into the container
+      - type: volume
+        source: vaultify-bin
+        target: /opt/vaultify
+        # uid: '0'
+        # gid: '0'
+        # mode: 0640
+    environment:
+      # this values will be replaced
+      "POSTGRES_PASSWORD": "<<DB_PASSWORD>>"
+      "POSTGRES_USER": "tester"
+      "PGPASSWORD": "<<DB_PASSWORD>>"
+    entrypoint: /opt/vaultify/vaultify
+    # call the 'run' command of vaultify
+    # to call the containers entrypoint ("docker-entrypoint.sh") with it's command ("postgres")
+    # command: run-only sleep 3600
+    command: run docker-entrypoint.sh postgres
+
+  client:
+    image: postgres:12
+    depends_on:
+      - postgres
+    networks:
+      internal:
+    volumes:
+      - ../bin/vaultify:/vaultify:ro
+      - ./vault:/etc/vault/vault:ro
+      - ./key:/etc/vault/key:ro
+    environment:
+      "PGPASSWORD": "<<DB_PASSWORD>>"
+    entrypoint: /vaultify
+    command: run sh -c "until pg_isready -U tester -d tester -h postgres -p 5432; do sleep 2; done && psql -U tester -d tester -h postgres -p 5432 -c \"SELECT 1 as test\""
+
+  vaultify:
+    image: datalyzesolutions/vaultify
+    volumes:
+      - type: volume
+        source: vaultify-bin
+        target: /opt/vaultify
+        volume:
+          nocopy: false

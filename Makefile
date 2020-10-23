@@ -15,6 +15,9 @@ PGPASSWORD := super-secret-password
 DEMO_VAULT := $(DEMO_DIR)/vault
 DEMO_VAULT_KEY := $(DEMO_DIR)/key
 
+IMAGE_NAME := datalyzesolutions/vaultify
+IMAGE_TAG := latest
+
 MODULE_BASE := github.com/datalyze-solutions/vaultify
 # disable dynamic linking of the binary to be runnable on any linux (e.g. ubuntu and alpine)
 # https://stackoverflow.com/questions/36279253/go-compiled-binary-wont-run-in-an-alpine-docker-container-on-ubuntu-host
@@ -40,6 +43,9 @@ compress:
 test:
 	go test -v .
 
+build-docker:
+	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+
 get-variable-path:
 	go tool nm ./vaultify | grep gitCommit
 
@@ -63,9 +69,9 @@ test-docker-pg: docker-down
 		-v $$PWD/$(BIN_FILE):/vaultify:ro \
 		-v $$PWD/$(DEMO_VAULT):/etc/vault/vault:ro \
 		-v $$PWD/$(DEMO_VAULT_KEY):/etc/vault/key:ro \
-		-e POSTGRES_PASSWORD={{DB_PASSWORD}} \
+		-e POSTGRES_PASSWORD="<<DB_PASSWORD>>" \
 		-e POSTGRES_USER=tester \
-		-e PGPASSWORD={{DB_PASSWORD}} \
+		-e PGPASSWORD="<<DB_PASSWORD>>" \
 		--entrypoint /vaultify \
 		--name vaultify-db \
 		postgres:12 \
@@ -75,10 +81,23 @@ test-docker-pg-connect:
 	docker exec -it vaultify-db \
 		psql -U tester -d tester -h localhost -p 5432 -c "SELECT 1 as test"
 
+test-docker-compose:
+	docker-compose -f demo/docker-compose.yaml up -d
+	docker wait vaultify-db-client
+	docker-compose -f demo/docker-compose.yaml logs client
+	docker-compose -f demo/docker-compose.yaml down --volume --remove-orphans
+
 test-os-runnable:
 	docker run -it --rm -v $$PWD/bin/:/app:ro alpine /app/vaultify run-only echo "It runs!"
 	docker run -it --rm -v $$PWD/bin/:/app:ro busybox /app/vaultify run-only echo "It runs!"
 	docker run -it --rm -v $$PWD/bin/:/app:ro ubuntu:20.04 /app/vaultify run-only echo "It runs!"
 
-docker-build:
-	docker build -t vaultify .
+test-docker-swarm-deploy:
+	docker stack deploy -c $(DEMO_DIR)/swarm.yaml vaultify-test
+	docker service logs -f vaultify-test_client
+
+test-docker-swarm-rm:
+	docker stack rm vaultify-test
+
+test-docker-swarm-clean:
+	docker volume rm vaultify-test_vaultify-bin
