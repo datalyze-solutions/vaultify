@@ -17,15 +17,13 @@ DB_NAME=backend
 DB_PORT=5432
 ```
 
-Vaultify takes the OSes environment variables and replaces the value marked within curly braces: `{{VALUE_INSIDE_VAULT_FILE}}`. Doing so you can also combine new environment variable with values from the vault, e.g. `postgres://{{DB_USER}}:{{DB_PASSWORD}}@{{DB_HOST}}:{{DB_PORT}}/{{DB_NAME}}`. Vaultify reads the ansible vault from `/etc/vault/vault` and the key `/etc/vault/key`. The keyfile contains the password in plaintext.
+Vaultify takes the OSes environment variables and replaces the value marked within curly braces: `<<VALUE_INSIDE_VAULT_FILE>>`. Doing so you can also combine new environment variable with values from the vault, e.g. `postgres://<<DB_USER>>:<<DB_PASSWORD>>@<<DB_HOST>>:<<DB_PORT>>/<<DB_NAME>>`. Vaultify reads the ansible vault from `/etc/vault/vault` and the key `/etc/vault/key`. The keyfile contains the password in plaintext.
 
 ```bash
-export VAULTIFY_DB_PASSWORD= "{{DB_PASSWORD}}"
-export VAULTIFY_TEST= "{{TEST}}"
-export VAULTIFY_POSTGRES_PASSWORD= "{{DB_PASSWORD}}"
-export VAULTIFY_DB_URI= "postgres://{{DB_USER}}:{{DB_PASSWORD}}@{{DB_HOST}}:{{DB_PORT}}/{{DB_NAME}}"
-# will not be replaced, cause it does not match the {{}} formatters
-export VAULTIFY_ALTERNATIVE_TEST= "<<TEST>>"
+export VAULTIFY_DB_PASSWORD="<<DB_PASSWORD>>"
+export VAULTIFY_TEST="<<TEST>>"
+export VAULTIFY_POSTGRES_PASSWORD="<<DB_PASSWORD>>"
+export VAULTIFY_DB_URI="postgres://<<DB_USER>>:<<DB_PASSWORD>>@<<DB_HOST>>:<<DB_PORT>>/<<DB_NAME>>"
 
 ./bin/vaultify run bash
 export | grep VAULTIFY
@@ -34,7 +32,6 @@ export | grep VAULTIFY
 should show the following result:
 
 ```bash
-export VAULTIFY_ALTERNATIVE_TEST='<<TEST>>'
 export VAULTIFY_DB_PASSWORD='super-secret-password'
 export VAULTIFY_DB_URI='postgres://bosch:super-secret-password@db:5432/backend'
 export VAULTIFY_POSTGRES_PASSWORD='super-secret-password'
@@ -49,21 +46,15 @@ You'll find a prepared plain docker example bundles within the Makefile. Calling
 
 ```bash
 docker run -d --rm \
-  # mount the vaultify binary into the container
   -v $PWD/bin/vaultify:/vaultify:ro \
-  # mount the vault and key into the container
   -v $PWD/demo/vault:/etc/vault/vault:ro \
   -v $PWD/demo/key:/etc/vault/key:ro \
-  # this values will be replaced
-  -e POSTGRES_PASSWORD={{DB_PASSWORD}} \
+  -e POSTGRES_PASSWORD="<<DB_PASSWORD>>" \
   -e POSTGRES_USER=tester \
-  -e PGPASSWORD={{DB_PASSWORD}} \
-  # configure vaultify to be the new entrypoint
+  -e PGPASSWORD="<<DB_PASSWORD>>" \
   --entrypoint /vaultify \
   --name vaultify-db \
   postgres:12 \
-  # call the 'run' command of vaultify
-  # to call the containers entrypoint ("docker-entrypoint.sh") with it's command ("postgres")
   run docker-entrypoint.sh postgres
 
 # connect to the container and perform a select

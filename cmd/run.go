@@ -32,8 +32,8 @@ import (
 )
 
 var (
-	patternPrefix string = "{{"
-	patternSuffix string = "}}"
+	patternPrefix string = "<<"
+	patternSuffix string = ">>"
 )
 
 // runAndReplaceCmd represents the run command
@@ -43,7 +43,7 @@ var runAndReplaceCmd = &cobra.Command{
 	Long: `Replaces prepared environment variables with vault extracted values
 	and executes the passed shell command. For example:
 
-	export TEST_ENV="{{TEST_VALUE_INSIDE_VAULT}}"
+	export TEST_ENV="<<TEST_VALUE_INSIDE_VAULT>>"
 	vaultify run sh
 	$ export | grep TEST_ENV
 	`,
@@ -81,6 +81,6 @@ var runAndReplaceCmd = &cobra.Command{
 func init() {
 	RootCmd.AddCommand(runAndReplaceCmd)
 
-	// runAndReplaceCmd.Flags().StringVarP(&patternPrefix, "patternPrefix", "P", "{{", "Prefix template string")
-	// runAndReplaceCmd.Flags().StringVarP(&patternSuffix, "patternSuffix", "S", "}}", "Suffix template string")
+	// runAndReplaceCmd.Flags().StringVarP(&patternPrefix, "patternPrefix", "P", "<<", "Prefix template string")
+	// runAndReplaceCmd.Flags().StringVarP(&patternSuffix, "patternSuffix", "S", ">>", "Suffix template string")
 }
