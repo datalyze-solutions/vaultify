@@ -1,8 +1,10 @@
 package lib
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 )
 
@@ -21,6 +23,16 @@ func ReplaceVaultValuesInOSEnvs(vaultFile string, vaultKeyFile string, patternPr
 	return updatedEnvs, nil
 }
 
+func ExecGivenShellCommandInSubshell(args []string, envs []string) (err error) {
+	wrapped := fmt.Sprintf(`%s`, strings.Join(args, " "))
+	shellCommandArgs := []string{"sh", "-c", wrapped}
+	err = ExecGivenShellCommand(shellCommandArgs, envs)
+	if err != nil {
+		return err
+	}
+	return
+}
+
 func ExecGivenShellCommand(args []string, envs []string) (err error) {
 	if len(args) == 0 {
 		panic(noShellCommandGiven())
@@ -34,7 +46,6 @@ func ExecGivenShellCommand(args []string, envs []string) (err error) {
 	}
 
 	cmdArgs := args[0:]
-
 	err = syscall.Exec(binary, cmdArgs, envs)
 	if err != nil {
 		return err
