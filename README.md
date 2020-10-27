@@ -38,6 +38,10 @@ export VAULTIFY_POSTGRES_PASSWORD='super-secret-password'
 export VAULTIFY_TEST='test123'
 ```
 
+## Docker Image
+
+A prepared image is available on https://hub.docker.com as `datalyzesolutions/vaultify:latest`. The is based on busybox and copies the vaultify binary from `/vaultify` to the volume `/opt/vaultify`. Doing so you can simply mount `/opt/vaultify` inside another container and overwriting it's entrypoint with `/opt/vaultify/vaultify`.
+
 ## Examples
 
 ### Docker
@@ -101,4 +105,20 @@ You can now check the logs of the `postgres` and `client` services.
 ```bash
 docker service logs -f postgres
 docker service logs -f client
+```
+
+## FAQ
+
+### My node process does not see replaced envs
+
+Start your node process in a subshell:
+
+```bash
+vaultify run sh -c 'node server.js'
+```
+
+or use the `run-sub-sh` command:
+
+```bash
+vaultify run-sub-sh node server.js
 ```
