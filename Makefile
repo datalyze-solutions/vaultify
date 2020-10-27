@@ -29,6 +29,9 @@ DEFAULT_FLAGS := --vaultFile $(DEMO_VAULT) --vaultKeyFile $(DEMO_VAULT_KEY)
 version:
 	@echo "Version: $(VERSION), Branch: $(GIT_BRANCH), Commit: $(GIT_COMMIT)"
 
+deps:
+	go get ./...
+
 build:
 	mkdir -p $(BIN_DIR)
 	$(BUILD_VARS) go build ${LDFLAGS} -o $(BIN_DIR)
@@ -48,6 +51,9 @@ build-docker:
 
 get-variable-path:
 	go tool nm ./vaultify | grep gitCommit
+
+vault-edit-demo:
+	ansible-vault edit $(DEMO_VAULT) --vault-password-file $(DEMO_VAULT_KEY)
 
 test-run-sh:
 	$(BIN_FILE) $(DEFAULT_FLAGS) --demo run sh -c "export | grep VAULTIFY"
