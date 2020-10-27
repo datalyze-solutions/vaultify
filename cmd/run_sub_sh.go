@@ -36,7 +36,7 @@ var runSubShAndReplaceCmd = &cobra.Command{
 	Short: "Replaces prepared envs with vault values and runs the passed command in a subshell (sh -c)",
 	Long: `Replaces prepared environment variables with vault extracted values
 	and executes the passed shell command in a subshell (sh -c "...").
-	This is needed for node processes. For example:
+	This is needed for e.g. node processes. For example:
 
 	export TEST_ENV="<<TEST_VALUE_INSIDE_VAULT>>"
 	vaultify run-sh node

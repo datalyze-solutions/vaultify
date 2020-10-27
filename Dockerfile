@@ -4,12 +4,18 @@ ENV SRC_DIR="/src"
 RUN apt-get update && \
     apt-get install -y upx-ucl && \
     rm -rf /var/lib/apt/lists/*
+
 RUN mkdir -p "${SRC_DIR}"
 WORKDIR "${SRC_DIR}"
 
+# just build deps
+COPY go.mod .
+COPY go.sum .
+# RUN go get ./...
+RUN go mod download
+
 # add source code
 ADD ./ "${SRC_DIR}"
-RUN make deps
 RUN make build compress
 
 FROM busybox
