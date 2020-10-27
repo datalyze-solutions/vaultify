@@ -32,7 +32,7 @@ func replaceVaultValuesInOSEnvs(envs []string, vaultMap map[string]string, patte
 				}
 				value = strings.Replace(value, placeholder, replacementValue, -1)
 			}
-			updatedEnvs = append(updatedEnvs, fmt.Sprintf("%s=%s", key, value))
+			updatedEnvs = append(updatedEnvs, fmt.Sprintf(`%s=%s`, key, value))
 
 			// log.Debugf("new value of %s: %s\n", key, os.Getenv(key))
 			// log.Debug()

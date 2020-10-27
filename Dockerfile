@@ -1,10 +1,21 @@
 FROM golang:latest as build
 
+ENV SRC_DIR="/src"
 RUN apt-get update && \
     apt-get install -y upx-ucl && \
     rm -rf /var/lib/apt/lists/*
-ADD ./ /src
-WORKDIR /src
+
+RUN mkdir -p "${SRC_DIR}"
+WORKDIR "${SRC_DIR}"
+
+# just build deps
+COPY go.mod .
+COPY go.sum .
+# RUN go get ./...
+RUN go mod download
+
+# add source code
+ADD ./ "${SRC_DIR}"
 RUN make build compress
 
 FROM busybox
