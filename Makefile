@@ -101,3 +101,10 @@ test-docker-swarm-rm:
 
 test-docker-swarm-clean:
 	docker volume rm vaultify-test_vaultify-bin
+
+test-docker:
+	docker run -it --rm -v $$PWD/demo:/etc/vault:ro -v $$PWD/bin:/vaultify:ro alpine sh
+
+test-docker-node:
+	docker run -it --rm -v $$PWD/demo/node-server:/app -v vaultify_node_modules:/app/node_modules node:13-alpine npm install --prefix /app
+	docker run -it --rm -v $$PWD/demo:/etc/vault:ro -v $$PWD/bin:/vaultify:ro -v $$PWD/demo/node-server:/app -v vaultify_node_modules:/app/node_modules -p 3000:3000 node:13-alpine /vaultify/vaultify --demo run-sub-sh npm start --prefix /app
