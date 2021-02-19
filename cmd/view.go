@@ -53,7 +53,10 @@ to quickly create a Cobra application.`,
 		lib.EnableDebugLog(Debug)
 
 		vaultFileContent, _ := lib.ReadVaultFileContent(VaultFile, VaultKeyFile)
-		fmt.Printf("Content of vault file:\n\n%s", vaultFileContent)
+
+		// use: `export $(./vaultify view | xargs)` to export the output in sh/bash
+		// source: https://stackoverflow.com/a/20909045
+		fmt.Printf("%s", vaultFileContent)
 
 		return
 	},
