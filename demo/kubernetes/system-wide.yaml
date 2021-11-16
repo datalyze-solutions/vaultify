@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: vaultify
+  namespace: default
+  labels:
+    k8s-app: vaultify
+spec:
+  selector:
+    matchLabels:
+      name: vaultify
+  template:
+    metadata:
+      labels:
+        name: vaultify
+    spec:
+      volumes:
+      # create a host volume to hold the binary
+      - name: host-opt-vaultify
+        hostPath:
+          path: /opt/vaultify
+      initContainers:
+      # start the vaultify container that copies the binary to the shared volume
+      - name: vaultify
+        image: datalyze/vaultify:latest
+        resources:
+          limits:
+            memory: 64Mi
+        volumeMounts:
+        # use the host volume
+        - name: host-opt-vaultify
+          mountPath: /opt/vaultify
+      containers:
+      # use a workaround to not always restart the pod
+      - name: pause
+        image: gcr.io/google_containers/pause
+        resources:
+          limits:
+            cpu: 50m
+            memory: 50Mi
+      terminationGracePeriodSeconds: 30

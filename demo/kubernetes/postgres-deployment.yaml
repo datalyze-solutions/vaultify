@@ -1,0 +1,145 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-vaultify-test
+spec:
+  selector:
+    matchLabels:
+      app: postgres-vaultify-test
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres-vaultify-test
+    spec:
+      volumes:
+        # create a shared volume between the containers in the pod
+        - name: opt-vaultify
+          hostPath:
+            path: /opt/vaultify
+        # mount vault and key secrets
+        - name: vault
+          secret:
+            secretName: vault
+      initContainers:
+        # start the vaultify container that copies the binary to the shared volume
+        - name: vaultify
+          image: datalyze/vaultify:latest
+          resources:
+            limits:
+              memory: 64Mi
+          # use the pod shared volume
+          volumeMounts:
+            - name: opt-vaultify
+              mountPath: /opt/vaultify
+      containers:
+        - name: postgres
+          image: postgres:13
+          # find the entrpoint and cmd on hub.docker.com
+          # > click on image and tag to show layers
+          # > this needs to called through vaultify run or run-sub-sh
+          # docker image has:
+          #  ENTRYPOINT ["docker-entrypoint.sh"]
+          #  CMD ["postgres"]
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_PASSWORD
+              value: "<<DB_PASSWORD>>"
+            - name: POSTGRES_USER
+              value: "tester"
+            - name: PGPASSWORD
+              value: "<<DB_PASSWORD>>"
+          # like docker entrypoint
+          command: ["/opt/vaultify/vaultify", "run", "docker-entrypoint.sh"]
+          # docker command
+          args: ["postgres"]
+          # use the pod shared volume
+          volumeMounts:
+            - name: opt-vaultify
+              mountPath: /opt/vaultify
+              readOnly: true
+            - name: vault
+              mountPath: "/etc/vault"
+              readOnly: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-vaultify-test
+  namespace: default
+  labels:
+    app: postgres-vaultify-test
+spec:
+  selector:
+    app: postgres-vaultify-test
+  ports:
+    - protocol: TCP
+      port: 5432
+
+
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgres-client-vaultify-test
+spec:
+  template:
+    metadata:
+      labels:
+        app: postgres-client-vaultify-test
+    spec:
+      volumes:
+        # create a shared volume between the containers in the pod
+        - name: opt-vaultify
+          hostPath:
+            path: /opt/vaultify
+        # mount vault and key secrets
+        - name: vault
+          secret:
+            secretName: vault
+      initContainers:
+        # start the vaultify container that copies the binary to the shared volume
+        - name: vaultify
+          image: datalyze/vaultify:latest
+          resources:
+            limits:
+              memory: 64Mi
+          # use the pod shared volume
+          volumeMounts:
+            - name: opt-vaultify
+              mountPath: /opt/vaultify
+        - name: check-db-ready
+          image: postgres:13
+          command: [
+              "sh",
+              "-c",
+              "until pg_isready -h postgres-vaultify-test -p 5432;
+              do echo waiting for database; sleep 2; done;",
+            ]
+      containers:
+        - name: postgres
+          image: postgres:13
+          env:
+            - name: POSTGRES_PASSWORD
+              value: "<<DB_PASSWORD>>"
+            - name: POSTGRES_USER
+              value: "tester"
+            - name: PGPASSWORD
+              value: "<<DB_PASSWORD>>"
+          # like docker entrypoint
+          command: ["/opt/vaultify/vaultify", "run-sub-sh"]
+          # docker command
+          args: ["psql", "-U",  "tester", "-d", "tester", "-h", "postgres-vaultify-test", "-p", "5432", "-c", "\"SELECT 1 as test\""]
+          # use the pod shared volume
+          volumeMounts:
+            - name: opt-vaultify
+              mountPath: /opt/vaultify
+              readOnly: true
+            - name: vault
+              mountPath: "/etc/vault"
+              readOnly: true
+      restartPolicy: OnFailure
+  backoffLimit: 4
+
+
