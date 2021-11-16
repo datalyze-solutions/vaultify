@@ -15,8 +15,7 @@ spec:
       volumes:
         # create a shared volume between the containers in the pod
         - name: opt-vaultify
-          hostPath:
-            path: /opt/vaultify
+          emptyDir: {}
         # mount vault and key secrets
         - name: vault
           secret:
