@@ -12,7 +12,7 @@ Consider the following content inside an ansible-vault file.
 DB_PASSWORD=super-secret-password
 TEST=test123
 DB_HOST=db
-DB_USER=bosch
+DB_USER=backend
 DB_NAME=backend
 DB_PORT=5432
 ```
@@ -33,7 +33,7 @@ should show the following result:
 
 ```bash
 export VAULTIFY_DB_PASSWORD='super-secret-password'
-export VAULTIFY_DB_URI='postgres://bosch:super-secret-password@db:5432/backend'
+export VAULTIFY_DB_URI='postgres://backend:super-secret-password@db:5432/backend'
 export VAULTIFY_POSTGRES_PASSWORD='super-secret-password'
 export VAULTIFY_TEST='test123'
 ```
