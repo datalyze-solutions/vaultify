@@ -40,7 +40,7 @@ export VAULTIFY_TEST='test123'
 
 ## Docker Image
 
-A prepared image is available on https://hub.docker.com as `datalyzesolutions/vaultify:latest`. The is based on busybox and copies the vaultify binary from `/vaultify` to the volume `/opt/vaultify`. Doing so you can simply mount `/opt/vaultify` inside another container and overwriting it's entrypoint with `/opt/vaultify/vaultify`.
+A prepared image is available on https://hub.docker.com as `datalyze/vaultify:latest`. The is based on busybox and copies the vaultify binary from `/vaultify` to the volume `/opt/vaultify`. Doing so you can simply mount `/opt/vaultify` inside another container and overwriting it's entrypoint with `/opt/vaultify/vaultify`.
 
 ## Examples
 
@@ -136,7 +136,7 @@ make test-docker-compose
 
 ### Docker Swarm
 
-To prevent building seperate images with vaultify included, you can copy vaultify to a volume shared with each service in the stack. The image hosted at hub.docker.com `datalyzesolutions/vaultify:latest` is prepared to copy vaultify into the directory `/opt/vaultify`. If you mount the volume inside another container you can set the entrypoint to `/opt/vaultify/vaultify`.
+To prevent building seperate images with vaultify included, you can copy vaultify to a volume shared with each service in the stack. The image hosted at hub.docker.com `datalyze/vaultify:latest` is prepared to copy vaultify into the directory `/opt/vaultify`. If you mount the volume inside another container you can set the entrypoint to `/opt/vaultify/vaultify`.
 
 `demo/swarm.yaml` contains a prepared swarm example. You can deploy it on youre own or using the make commands.
 
