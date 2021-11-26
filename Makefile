@@ -15,8 +15,10 @@ PGPASSWORD := super-secret-password
 DEMO_VAULT := $(DEMO_DIR)/vault
 DEMO_VAULT_KEY := $(DEMO_DIR)/key
 
-IMAGE_NAME := datalyzesolutions/vaultify
+IMAGE_NAME := datalyze/vaultify
 IMAGE_TAG := latest
+
+EDITOR := nano
 
 MODULE_BASE := github.com/datalyze-solutions/vaultify
 # disable dynamic linking of the binary to be runnable on any linux (e.g. ubuntu and alpine)
