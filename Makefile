@@ -4,7 +4,7 @@ SELF_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
 .EXPORT_ALL_VARIABLES:
 SHELL := /bin/bash
 
-VERSION := 0.0.1
+VERSION = $(shell cat .version)
 GIT_BRANCH := $(shell git symbolic-ref --short HEAD)
 GIT_COMMIT := $(shell git rev-list -1 HEAD)
 
@@ -31,6 +31,11 @@ DEFAULT_FLAGS := --vaultFile $(DEMO_VAULT) --vaultKeyFile $(DEMO_VAULT_KEY)
 version:
 	@echo "Version: $(VERSION), Branch: $(GIT_BRANCH), Commit: $(GIT_COMMIT)"
 
+version-build-up:
+	echo $(VERSION)
+	echo $(VERSION) | awk -F. '{$$NF = $$NF + 1;} 1' | sed 's/ /./g' > .version
+	cat .version
+
 deps:
 	go get ./...
 
@@ -48,7 +53,7 @@ compress:
 test:
 	go test -v .
 
-build-docker:
+build-docker: version-build-up
 	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
 
 get-variable-path:
