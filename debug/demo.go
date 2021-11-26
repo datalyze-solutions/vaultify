@@ -17,6 +17,8 @@ func setDemoOsVars() {
 	os.Setenv("VAULTIFY_POSTGRES_PASSWORD", "<<DB_PASSWORD>>")
 	os.Setenv("VAULTIFY_DB_URI", "postgres://<<DB_USER>>:<<DB_PASSWORD>>@<<DB_HOST>>:<<DB_PORT>>/<<DB_NAME>>")
 	os.Setenv("VAULTIFY_ALTERNATIVE_TEST", "<|TEST|>")
+	os.Setenv("VAULTIFY_MULTIPLE_SEPERATOR", "<<CERT>>")
+	os.Setenv("VAULTIFY_MULTIPLE_SEPERATOR2", "<<CERT2>>")
 }
 
 func setDemoErroneousOsVars() {

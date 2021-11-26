@@ -40,9 +40,9 @@ func BuildVaultMap(vaultFileContent string) map[string]string {
 
 	var vaultMap = make(map[string]string)
 
-	resultSplitted := strings.SplitN(vaultFileContent, "\n", -1)
+	resultSplitted := strings.Split(vaultFileContent, "\n")
 	for _, value := range resultSplitted {
-		vaultPair := strings.SplitN(value, "=", -1)
+		vaultPair := strings.SplitN(value, "=", 2)
 
 		if len(vaultPair) > 1 {
 			vaultKey := vaultPair[0]

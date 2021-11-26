@@ -11,7 +11,7 @@ func replaceVaultValuesInOSEnvs(envs []string, vaultMap map[string]string, patte
 	var updatedEnvs []string
 
 	for _, env := range envs {
-		envPair := strings.SplitN(env, "=", 2)
+		envPair := strings.Split(env, "=")
 		key := envPair[0]
 		value := envPair[1]
 
