@@ -8,7 +8,20 @@ VERSION = $(shell cat .version)
 GIT_BRANCH := $(shell git symbolic-ref --short HEAD)
 GIT_COMMIT := $(shell git rev-list -1 HEAD)
 
-BIN_DIR := bin
+BUILD_PLATFORMS ?= linux/amd64,linux/arm64
+# BUILD_PLATFORMS ?= linux/amd64
+# BUILD_PLATFORMS ?= linux/arm64
+
+GOOS ?= linux
+# targetplattform will be passeds as ARG during build
+TARGETPLATFORM ?= linux/amd64
+# remove linux/ from ARG TARGETPLATTFORM passed via --plattform ARG
+GOARCH ?= $(TARGETARCH)
+# GOARCH ?= amd64
+BUILD_VARS = CGO_ENABLED=0 GOOS=$(GOOS) GARCH=$(GOARCH)
+LDFLAGS = -ldflags "-w -s -X ${MODULE_BASE}/cmd.version=$(VERSION) -X ${MODULE_BASE}/cmd.gitCommit=$(GIT_COMMIT) -X ${MODULE_BASE}/cmd.gitBranch=$(GIT_BRANCH)"
+
+BIN_DIR ?= bin/$(GOARCH)
 BIN_FILE := $(BIN_DIR)/vaultify
 DEMO_DIR := demo
 PGPASSWORD := super-secret-password
@@ -18,15 +31,23 @@ DEMO_VAULT_KEY := $(DEMO_DIR)/key
 IMAGE_NAME := datalyze/vaultify
 IMAGE_TAG := latest
 
+# COMPOSE_DOCKER_CLI_BUILD = 1
+# DOCKER_BUILDKIT = 1
+# DOCKER_DEFAULT_PLATFORM ?= $(BUILD_PLATTFORMS)
+
 EDITOR := nano
 
 MODULE_BASE := github.com/datalyze-solutions/vaultify
 # disable dynamic linking of the binary to be runnable on any linux (e.g. ubuntu and alpine)
 # https://stackoverflow.com/questions/36279253/go-compiled-binary-wont-run-in-an-alpine-docker-container-on-ubuntu-host
-BUILD_VARS := CGO_ENABLED=0 GOOS=linux GARCH=amd64
-LDFLAGS = -ldflags "-w -s -X ${MODULE_BASE}/cmd.version=$(VERSION) -X ${MODULE_BASE}/cmd.gitCommit=$(GIT_COMMIT) -X ${MODULE_BASE}/cmd.gitBranch=$(GIT_BRANCH)"
+
 
 DEFAULT_FLAGS := --vaultFile $(DEMO_VAULT) --vaultKeyFile $(DEMO_VAULT_KEY)
+BUILD_FILE = stack.yaml
+BUILDX = docker buildx bake --set *.platform=$(BUILD_PLATFORMS) --pull --progress=plain --file $(BUILD_FILE)
+
+arch:
+	@echo "Target: $(TARGETPLATFORM), arch: $(TARGETARCH), build-vars: $(BUILD_VARS)"
 
 version:
 	@echo "Version: $(VERSION), Branch: $(GIT_BRANCH), Commit: $(GIT_COMMIT)"
@@ -39,7 +60,12 @@ version-build-up:
 deps:
 	go get ./...
 
-build:
+build: arch
+	mkdir -p $(BIN_DIR)
+	$(BUILD_VARS) go build ${LDFLAGS} -o $(BIN_DIR)
+
+build-arm: TARGETPLATFORM=linux/arm64
+build-arm: arch
 	mkdir -p $(BIN_DIR)
 	$(BUILD_VARS) go build ${LDFLAGS} -o $(BIN_DIR)
 
@@ -53,8 +79,27 @@ compress:
 test:
 	go test -v .
 
-build-docker: version-build-up
-	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+buildx-init:
+	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+	docker buildx create --name multiarch
+	docker buildx use multiarch
+	docker buildx inspect --bootstrap
+
+buildx-use:
+	docker buildx use multiarch
+
+buildx-config:
+	$(BUILDX) --print
+
+buildx-build: #version-build-up
+	$(BUILDX)
+# docker buildx build --platform $(BUILD_PLATFORMS) --progress=plain --push --tag $(IMAGE_NAME):$(IMAGE_TAG) .
+
+buildx-push:
+	$(BUILDX) --push
+
+build-docker-local: #version-build-up
+	docker build --platform linux/amd64 --tag $(IMAGE_NAME):$(IMAGE_TAG) .
 
 get-variable-path:
 	go tool nm ./vaultify | grep gitCommit
