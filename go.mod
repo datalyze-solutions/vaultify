@@ -13,4 +13,5 @@ require (
 	github.com/spf13/viper v1.4.0
 	github.com/urfave/cli/v2 v2.2.0
 	golang.org/x/crypto v0.0.0-20200930160638-afb6bcd081ae // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
