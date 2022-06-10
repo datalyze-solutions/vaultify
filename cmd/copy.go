@@ -95,6 +95,11 @@ var runCopy = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		err = os.Chmod(newFile.Name(), 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
 		fmt.Printf("Copied '%s' to '%s', %d bytes.\n", ex, dest, bytesCopied)
 
 		return
