@@ -106,7 +106,7 @@ docker run -d --rm \
   -e PGPASSWORD="<<DB_PASSWORD>>" \
   --entrypoint /vaultify \
   --name vaultify-db \
-  postgres:12 \
+  postgres \
   run docker-entrypoint.sh postgres
 
 # connect to the container and perform a select

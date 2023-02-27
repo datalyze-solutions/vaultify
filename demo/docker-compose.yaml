@@ -6,7 +6,7 @@ networks:
 services:
 
   postgres:
-    image: postgres:12
+    image: postgres
     container_name: vaultify-db
     networks:
       internal:
@@ -27,7 +27,7 @@ services:
     command: run docker-entrypoint.sh postgres
 
   client:
-    image: postgres:12
+    image: postgres
     container_name: vaultify-db-client
     depends_on:
       - postgres

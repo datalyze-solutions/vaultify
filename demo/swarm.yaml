@@ -15,7 +15,7 @@ volumes:
 services:
 
   postgres:
-    image: postgres:12
+    image: postgres
     networks:
       internal:
     secrets:
@@ -44,7 +44,7 @@ services:
     command: run docker-entrypoint.sh postgres
 
   client:
-    image: postgres:12
+    image: postgres
     depends_on:
       - postgres
     networks:

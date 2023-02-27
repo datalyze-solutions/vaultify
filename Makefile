@@ -79,6 +79,10 @@ compress:
 test:
 	go test -v .
 
+upgrade-dependencies:
+	go get -u
+	go mod tidy
+
 buildx-init:
 	docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 	docker buildx create --name multiarch
@@ -107,6 +111,9 @@ get-variable-path:
 vault-edit-demo:
 	ansible-vault edit $(DEMO_VAULT) --vault-password-file $(DEMO_VAULT_KEY)
 
+vet:
+	go vet -n
+
 test-run-sh:
 	$(BIN_FILE) $(DEFAULT_FLAGS) --demo run sh -c "export | grep VAULTIFY"
 
@@ -132,7 +139,7 @@ test-docker-pg: docker-down
 		-e PGPASSWORD="<<DB_PASSWORD>>" \
 		--entrypoint /vaultify \
 		--name vaultify-db \
-		postgres:12 \
+		postgres \
 		--debug run docker-entrypoint.sh postgres
 
 test-docker-pg-connect:
